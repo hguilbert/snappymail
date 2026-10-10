@@ -3,7 +3,7 @@ echo "\x1b[33;1m === Debian === \x1b[0m\n";
 
 $deb_version = "{$package->version}-1";
 define('DEB_SOURCE_DIR', __DIR__ . '/deb');
-define('DEB_DEST_DIR', DEB_SOURCE_DIR . "/tachyon_{$deb_version}_all");
+define('DEB_DEST_DIR', DEB_SOURCE_DIR . "/tachyon-webmail_{$deb_version}_all");
 // Holds the changelog and files list that dpkg-gencontrol and dpkg-genchanges share
 define('DEB_META_DIR', DEB_DEST_DIR . '.meta');
 is_dir(DEB_DEST_DIR) && passthru('rm -dfr '.escapeshellarg(DEB_DEST_DIR));
@@ -20,7 +20,7 @@ mkdir($dir, 0755, true);
 file_put_contents($dir . '/VERSION', $package->version);
 copy('data/README.md', "{$dir}/README.md");
 
-$dir = DEB_DEST_DIR . '/usr/share/doc/tachyon';
+$dir = DEB_DEST_DIR . '/usr/share/doc/tachyon-webmail';
 mkdir($dir, 0755, true);
 copy('CODE_OF_CONDUCT.md', "{$dir}/CODE_OF_CONDUCT.md");
 copy('CONTRIBUTING.md', "{$dir}/CONTRIBUTING.md");
@@ -41,14 +41,14 @@ file_put_contents("{$dir}/include.php", preg_replace('@(external-tachyon-data-fo
 
 mkdir(DEB_META_DIR, 0755);
 preg_match('/^Maintainer: (.*)$/m', file_get_contents(DEB_SOURCE_DIR . '/debian/control'), $maintainer);
-$changelog = "tachyon ({$deb_version}) stable; urgency=medium
+$changelog = "tachyon-webmail ({$deb_version}) stable; urgency=medium
 
   * Release notes: https://github.com/kimusan/Tachyon/releases/tag/v{$package->version}
 
  -- {$maintainer[1]}  " . gmdate('r') . "
 ";
 file_put_contents(DEB_META_DIR . '/changelog', $changelog);
-file_put_contents(DEB_DEST_DIR . '/usr/share/doc/tachyon/changelog.Debian.gz', gzencode($changelog, 9));
+file_put_contents(DEB_DEST_DIR . '/usr/share/doc/tachyon-webmail/changelog.Debian.gz', gzencode($changelog, 9));
 $dpkg_args = ' -c' . escapeshellarg(DEB_SOURCE_DIR . '/debian/control')
 	. ' -l' . escapeshellarg(DEB_META_DIR . '/changelog')
 	. ' -f' . escapeshellarg(DEB_META_DIR . '/files');
