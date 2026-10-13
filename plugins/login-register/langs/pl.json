@@ -4,7 +4,7 @@
         "LABEL_REGISTRATION": "Rejestracja"
     },
     "TAB_LOGIN": {
-        "LABEL_FORGOT_PASSWORD_LINK_URL": "Adres URL strony zapomnianego hasła",
+        "LABEL_FORGOT_PASSWORD_LINK_URL": "Adres URL strony resetowania zapomnianego hasła",
         "LABEL_REGISTRATION_LINK_URL": "Zarejestruj adres URL"
     }
 }
