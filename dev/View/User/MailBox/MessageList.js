@@ -76,12 +76,22 @@ const
 	pad2 = v => 10 > v ? '0' + v : '' + v,
 	Ymd = dt => dt.getFullYear() + pad2(1 + dt.getMonth()) + pad2(dt.getDate()),
 
+	/**
+	 * Every way of showing a message arrives here: a click, the keyboard through
+	 * the selector, a middle click, and the swipe in the message view. So the
+	 * address bar is written here and nowhere else.
+	 *
+	 * This was written before and left commented out because the hash change
+	 * made the core load the message a second time. onRoute() now recognises the
+	 * message it is already showing and does nothing, so the write is free.
+	 *
+	 * setHash the first time, so Back returns to the list; replaceHash while a
+	 * message is already open, so reading ten messages leaves one entry to go
+	 * back through rather than ten.
+	 */
 	setMessage = msg => {
 		populateMessageBody(msg);
-/* This will replace url hash, and then load message
- * It's working properly yet
-//		let hash = msg.href;
-		let hash = mailBox(
+		const hash = mailBox(
 			msg.folder,
 			MessagelistUserStore.page(),
 			MessagelistUserStore.listSearch(),
@@ -89,7 +99,6 @@ const
 			msg.uid
 		);
 		MessageUserStore.message() ? hasher.replaceHash(hash) : hasher.setHash(hash);
-*/
 	};
 
 
