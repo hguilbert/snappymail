@@ -85,20 +85,26 @@ const
 	 * made the core load the message a second time. onRoute() now recognises the
 	 * message it is already showing and does nothing, so the write is free.
 	 *
-	 * setHash the first time, so Back returns to the list; replaceHash while a
-	 * message is already open, so reading ten messages leaves one entry to go
-	 * back through rather than ten.
+	 * How the address bar is written, from the caller:
+	 *   false  push, for an open the reader asked for, so Back returns to the list
+	 *   true   replace, for arrow keys stepping through the list: the URL has to
+	 *          stay accurate without leaving an entry per message
+	 *   null   leave it alone, for the preview pane filling itself at folder
+	 *          load. Writing there would overwrite the list's own history entry
+	 *          and Back would have nothing to return to.
 	 */
-	setMessage = msg => {
+	setMessage = (msg, replace) => {
 		populateMessageBody(msg);
-		const hash = mailBox(
-			msg.folder,
-			MessagelistUserStore.page(),
-			MessagelistUserStore.listSearch(),
-			MessagelistUserStore.threadUid(),
-			msg.uid
-		);
-		MessageUserStore.message() ? hasher.replaceHash(hash) : hasher.setHash(hash);
+		if (null !== replace) {
+			const hash = mailBox(
+				msg.folder,
+				MessagelistUserStore.page(),
+				MessagelistUserStore.listSearch(),
+				MessagelistUserStore.threadUid(),
+				msg.uid
+			);
+			replace ? hasher.replaceHash(hash) : hasher.setHash(hash);
+		}
 	};
 
 
@@ -284,12 +290,27 @@ export class MailMessageList extends AbstractViewRight {
 
 		this.selector.on('ItemSelect', message => {
 			if (message) {
+				// A selection the list made itself is not a place the reader asked
+				// to go, so it must not push: the one at folder load happens before
+				// any click at all, and Chrome marks a gesture-less entry skippable
+				// and walks straight past it on Back.
+				const auto = this.selector.autoSelected === message,
+					hashWrite = auto ? (this.selector.autoSelectedKeyboard || null) : false;
+				this.selector.autoSelected = null;
 //				setMessage(message.clone());
-				setMessage(message);
+				setMessage(message, hashWrite);
 			} else {
 				MessageUserStore.message(null);
 			}
 		});
+
+		// Back out of a message and the list has to forget which row was selected,
+		// or clicking that same row again changes nothing in the selector and the
+		// message never reopens. Nothing is checked at this point, so the
+		// selector's own ItemSelect(null) does not fire and this cannot loop.
+		MessageUserStore.message.subscribe(message =>
+			message || this.selector.selectedItem(null)
+		);
 
 		this.selector.on('MiddleClick', message => populateMessageBody(message, true));
 
@@ -359,7 +380,8 @@ export class MailMessageList extends AbstractViewRight {
 					let message = new MessageModel;
 					message.folder = sFolder;
 					message.uid = iUid;
-					setMessage(message);
+					// The folder hash just above pushed this navigation already.
+					setMessage(message, true);
 				} else {
 					MessageUserStore.message(null);
 				}
