@@ -288,6 +288,10 @@ export class MailMessageList extends AbstractViewRight {
 			'.messageListItem .messageCheckbox'
 		);
 
+		// Lines of body snippet to show under the subject, 0 for none. The store
+		// observable itself, so changing it in settings reflows the list at once.
+		this.previewLines = SettingsUserStore.messageListPreviewLines;
+
 		this.selector.on('ItemSelect', message => {
 			if (message) {
 				// A selection the list made itself is not a place the reader asked
