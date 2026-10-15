@@ -1,3 +1,31 @@
+## 4.4.3 - 2026-10-15
+
+Worth taking if you run 4.4.2: opening Drafts could fail outright on PHP 8.4, the Debian package pulled in a second PHP, and logging out did not end the session.
+
+### Security
+- Logging out left the server-side session alive. `Logout()` asked the browser to drop two cookies and nothing else: the `StorageType::SESSION` record that `getMainAccountFromToken()` actually checks stayed where it was, and the clear of the `SESSION_TOKEN` cookie had been commented out. Anyone holding a copy of the cookies from before the logout kept full mailbox access without the password, and since `FileStorage::Get()` touches the file on every read, a session being replayed never aged into the three hour sweep either. Reported by Fathi Ben Nasr, Convergent Cloud Computing (GHSA-gc87-g2gf-xj6q)
+- Backup restore ran without an admin session. `JsonAdminRestoreData` asked only whether the request had reached the admin panel, which is true for anyone able to load it, and the core rule requiring a login for `Admin*` actions did not cover it: a plugin action is dispatched as `PluginJsonAdminRestoreData`, so the test on the name starting with `Admin` never matched. The restore now demands an admin login, ignores the client's `Content-Type`, and will only write to the four directories and the one contacts database a backup legitimately contains, refusing the archive outright if it holds anything else. Reported by Fathi Ben Nasr, Convergent Cloud Computing (GHSA-5r45-3mqm-hcvg)
+- The IMAP sequence-set range pattern had no end anchor, so a value merely starting like a range was passed through whole and anything following it was read as more of the IMAP command. Nothing in the tree feeds it anything but server-derived integers, so this was a sharp edge rather than a hole, but it is the single place every FETCH, STORE and COPY sequence is built. Found while answering @remmmi (#140)
+
+### Fixed
+- **Opening Drafts could report "unknown error" and show nothing**, on PHP 8.4. A draft holds whatever was typed, so an address can have no domain at all, and `idn_to_utf8('')` throws a `ValueError` on 8.4 where older versions returned false. That happened while the message list was being serialised, so the whole response failed rather than one address. Reported by @daniu-de (#122)
+- **The Debian package pulled in a second PHP.** 4.4.2 added a versioned `php-fpm (>= 2:8.2~)` dependency, which no unversioned `Provides` can satisfy, so an existing working `php8.3-fpm` stopped counting and apt installed 8.4 beside it. The constraints are gone, as they were in 4.4.1; the 8.2 floor is still enforced at startup by `Integrity::phpVersion()`. Reported by @lvarnava (#134)
+- **The package is now called `tachyon-webmail`.** Debian already ships an unrelated `tachyon` in bookworm/main, a parallel ray tracer. Reported by @lvarnava (#135)
+- A fresh install could log that it had created the admin password and where to read it, and that password was then refused. It was written to `admin_password.txt` before the hash was stored, and `Config::Save()` returns a bool that nothing looked at, so wherever `application.ini` could not be written the file existed and held a password that had never been stored anywhere. Saved first now, and the file is written only if that worked. Reported by @jon4156 (#133)
+- The ics-viewer fix listed in 4.4.2 reached releases but not git checkouts: #127 widened the match in `message.js` and left `message.min.js`, the file the plugin actually loads, untouched. Release packaging runs terser over every plugin, which is how this turned up
+- In the Nextcloud file picker, the "Select folder" footer showed where it means nothing. It used the `hidden` binding, which any author rule carrying a `display` beats, and is now bound on `visible`. The button is also relabelled to the already-translated save string. Reported by @lvarnava (#117)
+
+### Added
+- **The Back button now closes an open message, and a message has its own link.** The route has always understood `#/mailbox/<folder>/m<uid>`, so a pasted link worked, but nothing ever wrote such a hash. Opening a message now pushes a history entry, arrow keys replace it rather than leaving one per message, and the preview pane filling itself at folder load writes nothing. Idea from @remmmi (#141)
+- Back out of the last of the client's own history entries and you are asked before you leave, rather than simply landing wherever you were before
+- The Nextcloud folder picker opens on the folder used last, with each level on the way down opened, so a nested folder is reached rather than only a top level one. Asked for by @lvarnava (#117)
+
+### Changed
+- The date format setting now previews with a date whose parts cannot be confused for one another. Thanks to Antonios Vamporakis (#137)
+- Translations updated for Polish and French, and plugin strings for Polish, French and Russian
+
+---
+
 ## 4.4.2 - 2026-10-09
 
 A release worth taking promptly: 4.4.0 and 4.4.1 could make login impossible on a host without the sodium extension.
