@@ -7,6 +7,7 @@
 		"UPDATE": "Update",
 		"USERNAME": "Username",
 		"PASSWORD": "Passphrase",
+		"SHOW_PASSWORD": "Show passphrase",
 		"CANCEL": "Cancel",
 		"SEARCH": "Search",
 		"YES": "Yes",
