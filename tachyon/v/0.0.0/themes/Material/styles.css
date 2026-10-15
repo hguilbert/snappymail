@@ -1,28 +1,35 @@
 /*
- * Tachyon theme: "Gmail"
- * A Google Mail-style look for Tachyon (SnappyMail fork).
- * Install as [root]/themes/Gmail/styles.css, then choose "Gmail" in Settings > Themes
- * (or set it as the default in the admin panel).
- * Follows the OS light/dark preference, like Gmail's "Device default" theme.
+ * Material: a Material Design 3 look, close to modern Gmail.
+ *
+ * Rounded "Compose" card, pill-shaped folder highlight, a large pill search
+ * field, unread rows white and bold with read rows tinted, the hover lift on
+ * message rows, and no size column in the list.
+ *
+ * Everything is driven by the --g-* tokens below, which are then mapped onto
+ * Tachyon's own theme variables. Light is the base. Dark is applied twice, the
+ * same way the other bundled themes do it: once for people who have not chosen
+ * a mode and whose system asks for dark, and once for people who picked dark
+ * explicitly. The media query carries :not([data-color-scheme="light"]) so that
+ * choosing light on a machine set to dark stays light.
+ *
+ * No web fonts are loaded (the CSP blocks third party fonts anyway); Roboto is
+ * used when installed, otherwise the system UI font.
  */
 
-/* No web-font @import: Tachyon's Content-Security-Policy blocks external fonts,
-   so this uses Google Sans/Roboto if installed locally, else the system UI font. */
-
-/* ---------- Design tokens ---------- */
+/* ---------- Design tokens: light (base) ---------- */
 :root {
 	color-scheme: light;
 
-	--g-font: "Google Sans", Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-	--g-bg: #f6f8fc;
-	--g-surface: #ffffff;
+	--g-font: Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+	--g-bg: #f6f8fc;             /* page background */
+	--g-surface: #ffffff;         /* list / reading pane */
 	--g-text: #1f1f1f;
-	--g-text-2: #444746;
-	--g-text-3: #5f6368;
+	--g-text-2: #444746;          /* secondary text */
+	--g-text-3: #5f6368;          /* muted (dates, sizes) */
 	--g-divider: #f1f3f4;
 	--g-border: #dadce0;
 	--g-hover: rgba(68, 71, 70, .08);
-	--g-row-read: #f2f6fc;
+	--g-row-read: #f2f6fc;        /* read rows are tinted, unread are white */
 	--g-row-selected: #c2dbff;
 	--g-nav-active: #d3e3fd;
 	--g-nav-active-text: #001d35;
@@ -33,10 +40,12 @@
 	--g-badge: #0b57d0;
 	--g-badge-text: #ffffff;
 	--g-star: #f4b400;
+	--g-on-accent: #ffffff;
+	--g-scrollbar: #bdc1c6;
 	--g-row-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0,
 		0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
 
-	/* Tachyon theme variables, mapped to the tokens */
+	/* ---- Tachyon theme variables, mapped to the tokens ---- */
 	--main-color: var(--g-text);
 	--main-bg-color: var(--g-bg);
 	--main-bg-image: none;
@@ -108,8 +117,9 @@
 	--tab-hover-border-clr: var(--g-border);
 }
 
+/* ---------- Design tokens: dark ---------- */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-color-scheme="light"]) {
 		color-scheme: dark;
 		--g-bg: #1b1b1b;
 		--g-surface: #202124;
@@ -129,23 +139,60 @@
 		--g-accent: #a8c7fa;
 		--g-badge: #a8c7fa;
 		--g-badge-text: #062e6f;
+		--g-on-accent: #062e6f;
+		--g-scrollbar: #5f6368;
 		--g-row-shadow: inset 1px 0 0 #3c4043, inset -1px 0 0 #3c4043,
 			0 1px 3px 0 rgba(0, 0, 0, .6);
 		--input-border-clr: #8e918f;
 	}
 }
 
-/* ---------- Base ---------- */
+:root[data-color-scheme="dark"] {
+	color-scheme: dark;
+	--g-bg: #1b1b1b;
+	--g-surface: #202124;
+	--g-text: #e3e3e3;
+	--g-text-2: #c4c7c5;
+	--g-text-3: #9aa0a6;
+	--g-divider: #2d2e30;
+	--g-border: #3c4043;
+	--g-hover: rgba(232, 234, 237, .08);
+	--g-row-read: #1b1b1b;
+	--g-row-selected: #004a77;
+	--g-nav-active: #004a77;
+	--g-nav-active-text: #c2e7ff;
+	--g-compose: #004a77;
+	--g-compose-text: #c2e7ff;
+	--g-search: #2d2e30;
+	--g-accent: #a8c7fa;
+	--g-badge: #a8c7fa;
+	--g-badge-text: #062e6f;
+	--g-on-accent: #062e6f;
+	--g-scrollbar: #5f6368;
+	--g-row-shadow: inset 1px 0 0 #3c4043, inset -1px 0 0 #3c4043,
+		0 1px 3px 0 rgba(0, 0, 0, .6);
+	--input-border-clr: #8e918f;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
 html, body {
 	font-family: var(--g-font);
 	background: var(--g-bg);
 	color: var(--g-text);
 }
-/*#rl-left, #rl-right, .b-folders, #V-MailFolderList { background: transparent !important; }*/
+
+/* Drag handle between folders and list: invisible like Gmail */
 #rl-left .resizer { background: transparent; }
 
-/* ---------- Left: Compose + folders ---------- */
-.b-folders .b-toolbar { padding: 8px 8px 16px; height: auto; }
+/* ------------------------------------------------------------------ */
+/* Left: Compose + folders                                             */
+/* ------------------------------------------------------------------ */
+.b-folders .b-toolbar {
+	padding: 8px 8px 16px;
+	height: auto;
+}
 
 .b-folders .buttonCompose,
 .b-folders .buttonCompose.btn-success {
@@ -218,7 +265,9 @@ html, body {
 }
 .b-folders .b-footer .btn:hover { background: var(--g-hover) !important; }
 
-/* ---------- Toolbars: round, borderless icon buttons ---------- */
+/* ------------------------------------------------------------------ */
+/* Toolbars: round, borderless icon buttons                            */
+/* ------------------------------------------------------------------ */
 #rl-right .btn-toolbar .btn,
 #V-SystemDropDown .btn {
 	background: transparent !important;
@@ -233,9 +282,15 @@ html, body {
 #V-SystemDropDown .btn:hover { background: var(--g-hover) !important; }
 #rl-right .btn-toolbar .btn.disabled { opacity: .38; }
 
-#top-system-dropdown-id { font-weight: 500; color: var(--g-text) !important; }
+/* Account button top-right */
+#top-system-dropdown-id {
+	font-weight: 500;
+	color: var(--g-text) !important;
+}
 
-/* ---------- Message list ---------- */
+/* ------------------------------------------------------------------ */
+/* Message list                                                        */
+/* ------------------------------------------------------------------ */
 #V-MailMessageList .messageList {
 	background: var(--g-surface);
 	border: 0;
@@ -275,6 +330,7 @@ html, body {
 	border: 0 !important;
 	color: var(--g-text-2) !important;
 }
+
 .messageList .listClear a,
 .messageList .listClear { color: var(--g-accent); font-weight: 500; }
 
@@ -303,7 +359,10 @@ html, body {
 .messageListItem:not(.unseen) .subjectParent { font-weight: 400; }
 
 /* Hover lift, the signature Gmail effect */
-.messageListItem:hover { box-shadow: var(--g-row-shadow); z-index: 1; }
+.messageListItem:hover {
+	box-shadow: var(--g-row-shadow);
+	z-index: 1;
+}
 
 /* Keyboard focus / open message / checked */
 .messageListItem.focused { box-shadow: inset 4px 0 0 var(--g-text-2); }
@@ -311,7 +370,7 @@ html, body {
 .messageListItem.checked,
 .messageListItem.checked.unseen { background: var(--g-row-selected) !important; }
 
-/* Columns: sender | subject | date */
+/* Column layout: sender | subject — snippet | date */
 .messageListItem .senderParent {
 	flex: 0 0 200px;
 	width: 200px;
@@ -343,7 +402,9 @@ html, body {
 .messageListItem.flagged .flagParent,
 .messageListItem .flagParent .icon-star { color: var(--g-star) !important; }
 
-/* ---------- Reading pane ---------- */
+/* ------------------------------------------------------------------ */
+/* Reading pane                                                        */
+/* ------------------------------------------------------------------ */
 #V-MailMessageView,
 #V-MailMessageView .messageView {
 	background: var(--g-surface);
@@ -355,25 +416,27 @@ html, body {
 	font: 400 22px/28px var(--g-font);
 	color: var(--g-text);
 }
-#V-MailMessageView .messageItemHeader { background: var(--g-surface); border-bottom: 0; }
+#V-MailMessageView .messageItemHeader {
+	background: var(--g-surface);
+	border-bottom: 0;
+}
 #V-MailMessageView .fromPlace,
 #V-MailMessageView .from { font-weight: 700; color: var(--g-text); }
 #V-MailMessageView .informationShort,
 #V-MailMessageView time { color: var(--g-text-3); font-size: 12px; }
 
-/* ---------- Buttons, dialogs, menus ---------- */
+/* ------------------------------------------------------------------ */
+/* Buttons, dialogs, menus                                             */
+/* ------------------------------------------------------------------ */
 .btn-primary, .btn-success, .btn.btn-success, .btn.btn-primary {
 	background: var(--g-accent) !important;
-	color: #fff !important;
+	color: var(--g-on-accent) !important;
 	border: 0 !important;
 	border-radius: 20px !important;
 	font-weight: 500;
 	text-shadow: none;
 }
-@media (prefers-color-scheme: dark) {
-	.btn-primary, .btn-success, .btn.btn-success, .btn.btn-primary { color: #062e6f !important; }
-}
-/* ...but keep Compose as the pale-blue card */
+/* …but keep Compose as the pale-blue card */
 .b-folders .buttonCompose.btn-success { color: var(--g-compose-text) !important; }
 
 .dropdown-menu {
@@ -391,7 +454,10 @@ dialog, .modal, .b-compose {
 }
 
 /* Login card */
-#V-Login form, #V-Login .wrapper { border-radius: 28px; padding: 36px 40px; }
+#V-Login form, #V-Login .wrapper {
+	border-radius: 28px;
+	padding: 36px 40px;
+}
 
 /* Thin, unobtrusive scrollbars */
-* { scrollbar-width: thin; scrollbar-color: #bdc1c6 transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--g-scrollbar) transparent; }
