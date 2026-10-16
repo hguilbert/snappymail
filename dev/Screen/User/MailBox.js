@@ -72,12 +72,22 @@ export class MailBoxUserScreen extends AbstractScreen {
 		const folder = getFolderFromHashMap(folderHash.replace(/~([\d]+)$/, ''));
 		if (folder) {
 			page = 1 > page ? 1 : page;
+			// The thread uid travels inside the folder part, as "folder~uid", so it
+			// has to be read before deciding whether the list moved. Entering or
+			// leaving a thread changes neither the folder, the page nor the search,
+			// so without it the reload was skipped and the whole list stayed on
+			// screen while the view had switched to the thread, and Back to list
+			// did not switch back either (#156).
+			const sThreadUid = folderHash.replace(/^.+~(\d+)$/, '$1'),
+				threadUid = folderHash === sThreadUid ? 0 : pInt(sThreadUid);
+
 			// Opening a message writes the address bar now, so this runs on every
 			// message click. Reload the list only when the list itself moved, or
 			// each click would refetch the list sitting behind the message.
 			const listUnchanged = FolderUserStore.currentFolder() === folder
 				&& MessagelistUserStore.page() === page
-				&& MessagelistUserStore.listSearch() === search;
+				&& MessagelistUserStore.listSearch() === search
+				&& MessagelistUserStore.threadUid() === threadUid;
 
 			FolderUserStore.currentFolder(folder);
 			MessagelistUserStore.page(page);
@@ -101,8 +111,7 @@ export class MailBoxUserScreen extends AbstractScreen {
 				// folder. Close whatever is open, which is what the Back button is
 				// expected to do.
 				MessageUserStore.message(null);
-				let threadUid = folderHash.replace(/^.+~(\d+)$/, '$1');
-				MessagelistUserStore.threadUid((folderHash === threadUid) ? 0 : pInt(threadUid));
+				MessagelistUserStore.threadUid(threadUid);
 			}
 			listUnchanged || MessagelistUserStore.reload();
 		}
