@@ -84,11 +84,15 @@ export class MailBoxUserScreen extends AbstractScreen {
 			MessagelistUserStore.listSearch(search);
 			if (messageUid) {
 				const current = MessageUserStore.message();
-				// Usually already on screen, put there by the click that wrote this
-				// hash. Fetching it again is what made this idea get shelved before.
-				if (!current || current.uid != messageUid || current.folder !== folderHash) {
+				// A message carries its folder's full name, never the hash, so both
+				// the comparison and the new message take folder.fullName. Taking
+				// the hash compared a name against a hash, so it never matched and
+				// then asked for a message in a folder that does not exist, which
+				// Remote.message() dropped without a word (#155). As with #153 it
+				// hid wherever a folder name hashes to itself, INBOX included.
+				if (!current || current.uid != messageUid || current.folder !== folder.fullName) {
 					let message = new MessageModel;
-					message.folder = folderHash;
+					message.folder = folder.fullName;
 					message.uid = messageUid;
 					populateMessageBody(message);
 				}
