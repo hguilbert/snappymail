@@ -123,8 +123,13 @@ export class MailBoxUserScreen extends AbstractScreen {
 			} else {
 				// No message in the hash: Back out of one, or any move to the plain
 				// folder. Close whatever is open, which is what the Back button is
-				// expected to do.
-				MessageUserStore.message(null);
+				// expected to do. Unless the selector is about to open another,
+				// which is how next and previous cross a page boundary.
+				if (MessagelistUserStore.selectAfterReload) {
+					MessagelistUserStore.selectAfterReload = false;
+				} else {
+					MessageUserStore.message(null);
+				}
 			}
 			listUnchanged || MessagelistUserStore.reload();
 		}

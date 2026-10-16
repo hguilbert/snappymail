@@ -192,6 +192,18 @@ MessagelistUserStore.notifyNewMessages = (folder, newMessages) => {
 	}
 }
 
+/**
+ * Set when next or previous crosses a page boundary with a message open. The
+ * page change writes a hash with no message in it, and the route must not read
+ * that as "close the message", because the selector is about to open the next
+ * one as soon as the list lands. Clearing it there dropped the reader onto the
+ * list for an instant, which is invisible beside a preview pane and plain to
+ * see on mobile, where the list and the message are separate views (#157).
+ *
+ * A plain property: nothing binds to it, and it is consumed by the next route.
+ */
+MessagelistUserStore.selectAfterReload = false;
+
 MessagelistUserStore.canSelect = () =>
 	!disableAutoSelect()
 	&& SettingsUserStore.usePreviewPane();
