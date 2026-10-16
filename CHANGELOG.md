@@ -1,3 +1,17 @@
+## 4.4.6 - 2026-10-16
+
+Five releases in two days, and three of them to clean up after one change of mine. Sorry. Writing the open message into the address bar, added in 4.4.3 so that Back works and a message can be linked, reset a different piece of the mailbox on every click, and each one surfaced as its own bug. Everything the address bar carries is now read and applied in one place, and the rest of the links that write it have been gone through rather than waited on.
+
+If you are on 4.4.3, 4.4.4 or 4.4.5, take this one.
+
+### Fixed
+- **Opening a message from page 2 or later jumped back to page 1**, after which the previous and next arrows walked a list that no longer held the open message and appeared to do nothing. A message link has nowhere to record the page, so the route reported page one for every one of them and the list was reloaded at the top. Reported by @lvarnava (#157)
+- **Opening a message from a search threw the search away** and reloaded the whole folder behind it. The link dropped the search, which the route has always been able to carry after the uid. Found while fixing #157, not reported
+- **Clicking the conversation count showed the whole list, and Back to list stayed in the thread.** The test that stops every message click refetching the list compared the folder, page and search, and the thread uid is none of those: it travels inside the folder part, so entering or leaving a thread changed nothing it looked at and the reload was skipped in both directions. Reported by @floppybl (#156)
+- Reloading the browser while reading a message inside a thread came back with the whole folder behind it. The thread uid was applied only when the address bar held no message. Found by going through the remaining links rather than from a report
+
+---
+
 ## 4.4.5 - 2026-10-16
 
 Take this one if you run 4.4.3 or 4.4.4 and any of your folders has a space, an accent or a nested path: opening a message showed nothing at all.
