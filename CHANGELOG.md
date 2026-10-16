@@ -1,3 +1,17 @@
+## 4.4.5 - 2026-10-16
+
+Take this one if you run 4.4.3 or 4.4.4 and any of your folders has a space, an accent or a nested path: opening a message showed nothing at all.
+
+### Fixed
+- **A message opened to an empty body**, in any folder whose name is not plain ASCII. The fix for #153 in 4.4.4 put the correct folder hash into the address bar, and then the route handler took that hash for a folder name: it compared it against the open message's full name, which never matches, built a replacement message naming a folder that does not exist, and the request for it was dropped without a word. So the body loaded and was immediately replaced by nothing. Both the comparison and the new message now use the folder's full name, which the route handler has already resolved. Diagnosed, down to the line, by @remmmi (#155)
+- **Installing the Debian package over an older `tachyon` package stopped on a file conflict.** The rename in 4.4.3 left `tachyon-webmail` owning the same paths without declaring that it replaces them, so `apt install ./tachyon-webmail_*.deb` aborted unless the old package was removed first, which broke unattended installs. A versioned `Replaces` hands the files over. There is deliberately no `Breaks`: Debian's unrelated `tachyon` ray tracer also satisfies `<< 4.4.3~`, and apt would have offered to remove it. Diagnosed and tested, including against python-apt, by @ZaphodB (#154)
+- Asking for a message in a folder that cannot be resolved now says so in the browser console, with `[debug] javascript = On`. It returned false in silence before, which is how the two bugs above stayed invisible while the message view simply sat empty
+
+### Changed
+- Installing the Debian package now warns, once, while an older `tachyon` package is still installed. `Replaces` hands over the shared files but does not remove that package, and what stays behind is a complete older copy of the application under `/usr/share/tachyon`, missing the security fixes from 4.4.0 through 4.4.3. Run `apt remove tachyon` to clear it
+
+---
+
 ## 4.4.4 - 2026-10-16
 
 Take this one if you run 4.4.3: clicking a message could fill the search box and open nothing, for anyone whose folders are not named in plain ASCII.
