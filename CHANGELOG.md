@@ -1,3 +1,23 @@
+## 4.4.4 - 2026-10-16
+
+Take this one if you run 4.4.3: clicking a message could fill the search box and open nothing, for anyone whose folders are not named in plain ASCII.
+
+### Fixed
+- **Clicking a message filled the search box and showed nothing**, on 4.4.3 only. Message links name a folder by a URL-safe hash of its full name, because a full name may hold the hierarchy delimiter and anything else; the click path passed the full name instead, so a folder like `Lists/dev` produced extra path segments, no route matched it, and the tail was read as page and search. A folder named only `[a-z0-9._-]` hashes to itself, which is why `INBOX` behaved normally and this reached release: Dovecot's default `.` delimiter is in that class, Mailcow's `/` is not. Two older instances of the same mistake go with it, in the folder jumped to when a message is not in the current list, which is also how "select next after delete" moves, and in the notification for several new messages. Reported by @codiflow (#153)
+- The admin Contacts connection test reported plain success while contacts were switched off, so a green result said less than it appeared to and sent an administrator hunting for the fault elsewhere. It now has three outcomes: the database failing, the database answering while the feature is off, and both together. Found through #145
+
+### Added
+- **A line or two of the message body under the subject in the list**, off by default, with a setting under General for one line or two. The text comes from the IMAP server over `PREVIEW` (RFC 8970), which means no extra fetching and no HTML to strip, since the server is required to hand over plain text. Where a server cannot do it the setting says so rather than appearing to work, and where an administrator has turned it off the setting is hidden. Asked for by @DanClarke-io (#148)
+- **A show/passphrase toggle on both login screens.** Hidden by default, and it cannot submit the form or reveal anything before the page has finished loading. Asked for by @goddies (#131)
+- A **Material** theme, modelled on Material Design 3, in light and dark, with no web fonts fetched. Thanks to @DanClarke-io (#151)
+- `MailClient::MessageListByTuples()`, a supported way for a plugin to hand the core a page of `[folder, uid]` pairs and have it fetched and rendered, for search backed by an external index or a conversation ordering. The caller's order is kept across folders, repeats collapse, and pairs that could not be read are reported back. Asked for by @remmmi (#140)
+
+### Changed
+- The login-o365 documentation no longer offers the two redirect URI forms as equal alternatives. Microsoft permits a query parameter in a redirect URI only for work and school registrations, so a personal Outlook account must use the path form, which is the extension's default. Raised in #114
+- Translations updated for Polish and Russian
+
+---
+
 ## 4.4.3 - 2026-10-15
 
 Worth taking if you run 4.4.2: opening Drafts could fail outright on PHP 8.4, the Debian package pulled in a second PHP, and logging out did not end the session.
