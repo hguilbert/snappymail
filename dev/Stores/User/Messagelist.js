@@ -209,7 +209,7 @@ MessagelistUserStore.canSelect = () =>
 	&& SettingsUserStore.usePreviewPane();
 //	&& !SettingsUserStore.showNextMessage();
 
-let prevFolderName, prevSearch, prevOffset;
+let prevFolderName, prevSearch, prevOffset, prevThreadUid;
 
 /**
  * @param {boolean=} bDropPagePosition = false
@@ -244,10 +244,18 @@ MessagelistUserStore.reload = (bDropPagePosition = false, bDropCurrentFolderCach
 	// Keeping them hid the spinner, which only shows on an empty list, so a slow
 	// search or page change looked like nothing was happening at all.
 	// iOffset covers paging, and is already reset to 0 by bDropPagePosition above.
-	if (prevFolderName != folderName || prevSearch != search || prevOffset != iOffset) {
+	// The thread uid needs saying separately: opening a conversation keeps the
+	// same folder and search, and lands on page 1, so from page 1 nothing here
+	// moved. The whole folder then sat on screen, with no spinner, until the
+	// thread arrived to replace it, which looks exactly like the thread never
+	// loading at all (#156).
+	const threadUid = MessagelistUserStore.threadUid();
+	if (prevFolderName != folderName || prevSearch != search || prevOffset != iOffset
+	 || prevThreadUid != threadUid) {
 		prevFolderName = folderName;
 		prevSearch = search;
 		prevOffset = iOffset;
+		prevThreadUid = threadUid;
 		MessagelistUserStore([]);
 	}
 
