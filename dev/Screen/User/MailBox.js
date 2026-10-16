@@ -72,6 +72,15 @@ export class MailBoxUserScreen extends AbstractScreen {
 		const folder = getFolderFromHashMap(folderHash.replace(/~([\d]+)$/, ''));
 		if (folder) {
 			page = 1 > page ? 1 : page;
+			// A message link has nowhere to put the page, so the route reports 1 for
+			// every one of them. Taking that at face value threw the reader back to
+			// the first page the moment they opened anything from page 2 or later,
+			// and left the arrows walking a list that no longer held the open
+			// message (#157). Keep the page we are on; a link opened cold still
+			// gets 1, because that is what the store holds then.
+			if (messageUid && 1 === page) {
+				page = MessagelistUserStore.page();
+			}
 			// The thread uid travels inside the folder part, as "folder~uid", so it
 			// has to be read before deciding whether the list moved. Entering or
 			// leaving a thread changes neither the folder, the page nor the search,
