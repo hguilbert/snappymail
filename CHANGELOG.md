@@ -1,6 +1,6 @@
 ## 4.4.6 - 2026-10-16
 
-Five releases in two days, and three of them to clean up after one change of mine. Sorry. Writing the open message into the address bar, added in 4.4.3 so that Back works and a message can be linked, reset a different piece of the mailbox on every click, and each one surfaced as its own bug. Everything the address bar carries is now read and applied in one place, and the rest of the links that write it have been gone through rather than waited on.
+Four releases in two days, three of them today, to clean up after one change of mine. Sorry. Writing the open message into the address bar, added in 4.4.3 so that Back works and a message can be linked, reset a different piece of the mailbox on every click, and each one surfaced as its own bug. Everything the address bar carries is now read and applied in one place, and the rest of the links that write it have been gone through rather than waited on.
 
 If you are on 4.4.3, 4.4.4 or 4.4.5, take this one.
 
