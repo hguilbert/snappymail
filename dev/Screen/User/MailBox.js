@@ -98,9 +98,14 @@ export class MailBoxUserScreen extends AbstractScreen {
 				&& MessagelistUserStore.listSearch() === search
 				&& MessagelistUserStore.threadUid() === threadUid;
 
+			// Every piece of list state the hash carries, set in one place. Setting
+			// the thread uid in the no-message branch only meant a reload while
+			// reading a message inside a thread came back with the whole folder
+			// behind it, the hash saying one thing and the store another.
 			FolderUserStore.currentFolder(folder);
 			MessagelistUserStore.page(page);
 			MessagelistUserStore.listSearch(search);
+			MessagelistUserStore.threadUid(threadUid);
 			if (messageUid) {
 				const current = MessageUserStore.message();
 				// A message carries its folder's full name, never the hash, so both
@@ -120,7 +125,6 @@ export class MailBoxUserScreen extends AbstractScreen {
 				// folder. Close whatever is open, which is what the Back button is
 				// expected to do.
 				MessageUserStore.message(null);
-				MessagelistUserStore.threadUid(threadUid);
 			}
 			listUnchanged || MessagelistUserStore.reload();
 		}
