@@ -95,9 +95,16 @@ const
 	 */
 	setMessage = (msg, replace) => {
 		populateMessageBody(msg);
-		if (null !== replace) {
+		// A message carries its folder's full name, and mailBox() wants the hash:
+		// fullNameHash exists because a full name may hold anything, including the
+		// delimiter. Writing the name here put "a/b/c" into the URL, where the
+		// route read the tail as page and search, so the search box filled itself
+		// and the message never opened (#153). It went unnoticed because a folder
+		// named only [a-z0-9._-], INBOX for one, hashes to itself.
+		const folderHash = null !== replace && getFolderFromCacheList(msg.folder)?.fullNameHash;
+		if (folderHash) {
 			const hash = mailBox(
-				msg.folder,
+				folderHash,
 				MessagelistUserStore.page(),
 				MessagelistUserStore.listSearch(),
 				MessagelistUserStore.threadUid(),
@@ -372,14 +379,15 @@ export class MailMessageList extends AbstractViewRight {
 			);
 
 			// Only go to the folder when the message is not already in front of
-			// us. mailBox(sFolder) carries no page and no search, so navigating
+			// us. The folder link carries no page and no search, so navigating
 			// threw away a filtered list, and this event is also how deleting a
 			// message asks for the next one to be selected: deleting inside a
 			// search dropped you back into the unfiltered folder every time.
 			if (message) {
 				this.selector.selectMessageItem(message);
 			} else {
-				hasher.setHash(mailBox(sFolder));
+				// The hash, not the full name, for the reason given at setMessage()
+				hasher.setHash(mailBox(getFolderFromCacheList(sFolder)?.fullNameHash));
 				if (sFolder && iUid) {
 					let message = new MessageModel;
 					message.folder = sFolder;
